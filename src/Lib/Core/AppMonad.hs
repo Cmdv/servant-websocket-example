@@ -43,8 +43,6 @@ runAppAsHandler :: AppEnv -> App a -> Handler a
 runAppAsHandler env app = do
   liftIO $ runApp env app
 
-
-
 runApp :: AppEnv -> App a -> IO a
 runApp env = flip runReaderT env . unApp
 

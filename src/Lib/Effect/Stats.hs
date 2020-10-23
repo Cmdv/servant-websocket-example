@@ -7,37 +7,37 @@ module Lib.Effect.Stats
 
 import Prelude
 
-import Lib.Core.Stats (SuccRequests, EnvStats(..))
+import Lib.Core.Stats (RequestCount, EnvStats(..))
 import Control.Monad.Reader (MonadIO, MonadReader, liftIO)
-import Control.Concurrent (putMVar, readMVar)
 import Lib.Core.AppMonad (grab, Has, App)
+import Data.IORef (readIORef, writeIORef)
 
 -- | Describes a monad that provide an interface for a 'EnvStats' type
 class Monad m => MonadStats m where
-    getStats     :: m SuccRequests
-    putStats     :: SuccRequests -> m ()
+    getStats     :: m RequestCount
+    putStats     :: RequestCount -> m ()
     resetStats   :: m ()
 
 instance MonadStats App where
-    getStats       = getStatsImpl
-    putStats       = putStatsImpl
+    getStats      = getStatsImpl
+    putStats      = putStatsImpl
     resetStats    = resetStatsImpl
 
 type WithStats r m = (MonadReader r m, Has EnvStats r, MonadIO m)
 
--- | functions to get manipulate MVar inside EnvStats
-getStatsImpl :: WithStats r m => m SuccRequests
+-- | functions to get manipulate IORef inside EnvStats
+getStatsImpl :: WithStats r m => m RequestCount
 getStatsImpl = do
-    statsMvar <- grab @EnvStats
-    succR <- liftIO $ readMVar (succRequests statsMvar)
+    statsIORef <- grab @EnvStats
+    succR <- liftIO $ readIORef (requestCount statsIORef)
     pure succR
 
-putStatsImpl :: WithStats r m => SuccRequests -> m ()
+putStatsImpl :: WithStats r m => RequestCount -> m ()
 putStatsImpl succR = do
-    statsMvar <- grab @EnvStats
-    liftIO $ putMVar (succRequests statsMvar) succR
+    statsIORef <- grab @EnvStats
+    liftIO $ writeIORef (requestCount statsIORef) succR
 
 resetStatsImpl :: WithStats r m => m ()
 resetStatsImpl = do
-    statsMvar <- grab @EnvStats
-    liftIO $ putMVar (succRequests statsMvar) 0
+    statsIORef <- grab @EnvStats
+    liftIO $ writeIORef (requestCount statsIORef) 0

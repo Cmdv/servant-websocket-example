@@ -1,12 +1,12 @@
 module Lib.Core.Stats
        ( EnvStats (..)
-       , SuccRequests
+       , RequestCount
        ) where
 
-import Control.Concurrent (MVar)
+import Data.IORef (IORef)
 
 -- | state for our stats
-type SuccRequests = Int
+type RequestCount = Int
 
 newtype EnvStats =  EnvStats
-  { succRequests :: MVar SuccRequests }
+  { requestCount :: IORef RequestCount }

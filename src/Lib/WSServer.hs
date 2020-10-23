@@ -1,25 +1,28 @@
 module Lib.WSServer where
 
-import Control.Concurrent (threadDelay)
-import Control.Monad.IO.Class (MonadIO, liftIO)
-import Data.Foldable (forM_)
+import Control.Monad.Reader (liftIO)
+import Data.IORef (readIORef)
 import Data.Text (pack)
-import Lib.Core.AppMonad (AppEnv)
-import Network.WebSockets (DataMessage(Text), DataMessage, ServerApp, Connection, withPingThread, sendTextData)
-import Servant ((:>), Proxy (..), Server)
-import Servant.API.WebSocket (WebSocket)
-import Network.WebSockets.Connection (acceptRequest)
-import Network.WebSockets.Connection (sendDataMessage)
-import Data.Aeson (encode)
+import Lib.Core.AppMonad (envStats, AppEnv)
+import Lib.Core.Stats (RequestCount, requestCount)
+import Lib.Effect.Stats (getStats, MonadStats)
+import qualified Network.WebSockets as WS
+import Control.Concurrent (threadDelay)
+import Data.Foldable (forM_)
 
-type WebSocketApi = "health" :> WebSocket
+wsApp :: AppEnv -> WS.ServerApp
+wsApp appEnv pending = do
+  conn <- WS.acceptRequest pending
+  -- loop getting request count every 2 seconds
+  forM_ [1..] $ \i -> do
+    reqCount <- liftIO $ readIORef $ requestCount $ envStats appEnv
+    WS.withPingThread
+      conn
+      10
+      (return ())
+      (WS.sendTextData conn (pack $ show reqCount) >> threadDelay 2000000)
 
-api :: Proxy WebSocketApi
-api = Proxy
-
-wsApp :: AppEnv -> Server WebSocketApi
-wsApp env = streamData
- where
-   streamData :: MonadIO m => Connection -> m ()
-   streamData c = liftIO . forM_ [1..] $ \i -> do
-     withPingThread c 10 (return ()) (sendTextData c (pack $ show (i :: Int)) >> threadDelay 1000000)
+getEnvStats :: (MonadStats m) => m RequestCount
+getEnvStats = do
+  reqCount <- getStats
+  pure reqCount
