@@ -8,7 +8,7 @@ import Data.Aeson.Types (ToJSON)
 import Data.Data (Proxy(Proxy))
 import GHC.Generics (Generic)
 import Lib.Effect.Stats (getStats, putStats, MonadStats)
-import Lib.Core.AppMonad (AppEnv, AppServer, ToApi)
+import Lib.Core.AppMonad (runAppAsHandler, AppEnv, AppServer, ToApi)
 import Network.Wai (Application)
 import Servant (JSON, Post)
 import Servant.API ((:>))
@@ -49,7 +49,7 @@ helloHandler = do
 server :: AppEnv -> Server Api
 server env = hoistServer
     (Proxy @Api)
-    (pure _)
+    (runAppAsHandler env)
     (toServant httpServer)
 
 httpApp :: AppEnv -> Application

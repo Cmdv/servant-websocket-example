@@ -5,9 +5,12 @@ import Control.Monad.IO.Class (MonadIO, liftIO)
 import Data.Foldable (forM_)
 import Data.Text (pack)
 import Lib.Core.AppMonad (AppEnv)
-import Network.WebSockets (Connection, withPingThread, sendTextData)
+import Network.WebSockets (DataMessage(Text), DataMessage, ServerApp, Connection, withPingThread, sendTextData)
 import Servant ((:>), Proxy (..), Server)
 import Servant.API.WebSocket (WebSocket)
+import Network.WebSockets.Connection (acceptRequest)
+import Network.WebSockets.Connection (sendDataMessage)
+import Data.Aeson (encode)
 
 type WebSocketApi = "health" :> WebSocket
 
