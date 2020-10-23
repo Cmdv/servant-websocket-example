@@ -58,8 +58,7 @@ library
                        Lib.Core.AppMonad
                        Lib.Core.Stats
                        Lib.Effect.Stats
-                       Lib.HttpServer.Env
-                       Lib.HttpServer.Server
+                       Lib.HttpServer
                        Lib.WSServer
 
   build-depends:       base

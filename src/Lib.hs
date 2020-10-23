@@ -6,7 +6,7 @@
 module Lib where
 
 import Lib.Core.AppMonad (AppEnv, Env(..))
-import Lib.HttpServer.Server (httpApp)
+import Lib.HttpServer (httpApp)
 import Network.Wai.Handler.Warp (run)
 import Network.WebSockets (defaultConnectionOptions)
 import Network.Wai.Handler.WebSockets (websocketsOr)

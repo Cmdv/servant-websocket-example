@@ -1,4 +1,4 @@
-module Lib.HttpServer.Server
+module Lib.HttpServer
        ( Api
        , httpApp
        ) where
@@ -25,6 +25,7 @@ data HttpSite route = HttpSite
         :> Post '[JSON] HelloRes
     } deriving (Generic)
 
+-- type used for the JSON responce
 newtype HelloRes = HelloRes { msg :: String }
   deriving Generic
 
@@ -35,6 +36,8 @@ httpServer = HttpSite
     { helloRoute = helloHandler
     }
 
+-- Handlers used when dealing with specific endpoints
+-- constraint to MonadStats m to get access to that state
 helloHandler :: ( MonadStats m ) => m HelloRes
 helloHandler = do
     reqCount <- getStats
@@ -42,6 +45,7 @@ helloHandler = do
     putStats newReqCount
     pure $ HelloRes (show newReqCount)
 
+-- Entry point into the http server
 server :: AppEnv -> Server Api
 server env = hoistServer
     (Proxy @Api)
